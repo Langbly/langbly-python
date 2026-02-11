@@ -1,6 +1,12 @@
 # langbly-python
 
-Official Python SDK for the [Langbly](https://langbly.com) translation API — a drop-in replacement for Google Translate v2.
+[![PyPI](https://img.shields.io/pypi/v/langbly)](https://pypi.org/project/langbly/)
+[![Python](https://img.shields.io/pypi/pyversions/langbly)](https://pypi.org/project/langbly/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Official Python SDK for the [Langbly](https://langbly.com) translation API — a drop-in replacement for Google Translate v2, powered by LLMs.
+
+**5-10x cheaper than Google Translate** · **Better quality** · **Switch in one PR**
 
 ## Installation
 
@@ -27,36 +33,66 @@ for r in results:
 # Detect language
 detection = client.detect("Bonjour le monde")
 print(detection.language)  # "fr"
+
+# List supported languages
+languages = client.languages(target="en")
 ```
 
-## Google Translate Migration
+## Migrate from Google Translate
 
-If you're using `google-cloud-translate`, switching is simple:
+Already using `google-cloud-translate`? Switching takes 2 minutes:
 
 ```python
-# Before (Google)
+# Before (Google Translate)
 from google.cloud import translate_v2 as translate
 client = translate.Client()
 result = client.translate("Hello", target_language="nl")
 
-# After (Langbly)
+# After (Langbly) — same concepts, better translations, 5x cheaper
 from langbly import Langbly
 client = Langbly(api_key="your-key")
 result = client.translate("Hello", target="nl")
 ```
 
+→ Full migration guide: [langbly.com/docs/migrate-google](https://langbly.com/docs/migrate-google)
+
+## Features
+
+- **Google Translate v2 API compatible** — same endpoint format
+- **Auto-retry** — exponential backoff on 429/5xx with Retry-After support
+- **Typed errors** — `RateLimitError`, `AuthenticationError`, `LangblyError`
+- **Batch translation** — translate multiple texts in one request
+- **Language detection** — automatic source language identification
+- **HTML support** — translate HTML while preserving tags
+- **Context manager** — use `with` for automatic cleanup
+
+## Error Handling
+
+```python
+from langbly import Langbly, RateLimitError, AuthenticationError
+
+client = Langbly(api_key="your-key")
+
+try:
+    result = client.translate("Hello", target="nl")
+except AuthenticationError:
+    print("Invalid API key")
+except RateLimitError as e:
+    print(f"Rate limited — retry after {e.retry_after}s")
+```
+
 ## API Reference
 
-### `Langbly(api_key, base_url=None)`
+### `Langbly(api_key, base_url=None, timeout=30.0, max_retries=2)`
 
 Create a client instance.
 
-- `api_key` (str): Your Langbly API key
+- `api_key` (str): Your Langbly API key — [get one free](https://langbly.com/signup)
 - `base_url` (str, optional): Override the API URL (default: `https://api.langbly.com`)
+- `timeout` (float, optional): Request timeout in seconds (default: 30)
+- `max_retries` (int, optional): Retries for transient errors (default: 2)
 
 ### `client.translate(text, target, source=None, format=None)`
-
-Translate text.
 
 - `text` (str | list[str]): Text(s) to translate
 - `target` (str): Target language code (e.g., "nl", "de", "fr")
@@ -65,15 +101,18 @@ Translate text.
 
 ### `client.detect(text)`
 
-Detect the language of text.
-
 - `text` (str): Text to analyze
 
 ### `client.languages(target=None)`
 
-List supported languages.
-
 - `target` (str, optional): Language code to return names in
+
+## Links
+
+- [Website](https://langbly.com)
+- [Documentation](https://langbly.com/docs)
+- [Compare: Langbly vs Google vs DeepL](https://langbly.com/compare)
+- [JavaScript/TypeScript SDK](https://github.com/Langbly/langbly-js)
 
 ## License
 
