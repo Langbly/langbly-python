@@ -101,6 +101,9 @@ class Langbly:
         target: str,
         source: Optional[str] = None,
         format: Optional[str] = None,
+        context: Optional[str] = None,
+        instructions: Optional[str] = None,
+        glossary: Optional[List[dict]] = None,
     ) -> Union[Translation, List[Translation]]:
         """Translate text to the target language.
 
@@ -109,6 +112,11 @@ class Langbly:
             target: Target language code (e.g., "nl", "de", "fr").
             source: Source language code. Auto-detected if omitted.
             format: "text" or "html". Default: "text".
+            context: Describes what the text is about (max 500 chars).
+                Example: "e-commerce checkout page", "medical report".
+            instructions: Tells the model how to translate (max 500 chars).
+                Example: "Use informal Dutch", "Do not translate product names".
+            glossary: List of {"source": "...", "target": "..."} term pairs (max 200).
 
         Returns:
             A Translation object, or a list if input was a list.
@@ -125,6 +133,12 @@ class Langbly:
             body["source"] = source
         if format:
             body["format"] = format
+        if context:
+            body["context"] = context
+        if instructions:
+            body["instructions"] = instructions
+        if glossary:
+            body["glossary"] = glossary
 
         data = self._post("/language/translate/v2", body)
 
